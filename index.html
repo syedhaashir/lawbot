@@ -1,0 +1,147 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interaction</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #aiForm {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #aiResponse {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            white-space: pre-line;
+        }
+
+        #loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Ask AI</h1>
+    <form id="aiForm">
+        <label for="prompt">Enter your prompt:</label>
+        <textarea id="prompt" name="prompt" rows="4" cols="50"></textarea>
+        <button type="button" onclick="askAI()">Ask AI</button>
+        <div id="loader"></div>
+    </form>
+    <div id="aiResponse"></div>
+
+    <script>
+        function askAI() {
+            var promptText = document.getElementById('prompt').value;
+            var loader = document.getElementById('loader');
+            var responseDiv = document.getElementById('aiResponse');
+
+            // Display loader
+            loader.style.display = 'block';
+            responseDiv.innerHTML = '';  // Clear previous responses
+
+            // Make a POST request to the /ask_ai route
+            fetch('/ask_ai', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: promptText }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loader
+                loader.style.display = 'none';
+
+                if (data.status === 'success') {
+                    // Display AI response with typing effect
+                    typeResponse(data.response, responseDiv);
+                } else {
+                    // Display error message
+                    responseDiv.innerHTML = '<strong>Error:</strong><br>' + data.message;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Hide loader in case of an error
+                loader.style.display = 'none';
+            });
+        }
+
+        function typeResponse(text, element) {
+            var words = text.split(' ');
+            var index = 0;
+            var intervalId = setInterval(function() {
+                element.innerHTML += words[index] + ' ';
+                index++;
+                if (index === words.length) {
+                    clearInterval(intervalId);
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>

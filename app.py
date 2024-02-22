@@ -1,9 +1,12 @@
+from flask import Flask, render_template, request, jsonify
 import PyPDF2
 import google.generativeai as genai
 import re
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+
+app = Flask(__name__)
 
 # Set your API key here
 GOOGLE_API_KEY = "AIzaSyBFJ1K8XvM6vlVxNa4iCFcLyQq7mGKfAl8"
@@ -21,6 +24,16 @@ def read_pdf(file_path):
         for page in reader.pages:
             text += page.extract_text()
     return text
+# ... (other imports and code)
+
+# Function to extract relevant keywords using NLTK
+def extract_keywords(text):
+    stop_words = set(stopwords.words('english'))
+    word_tokens = word_tokenize(text)
+    keywords = [word.lower() for word in word_tokens if word.isalnum() and word.lower() not in stop_words]
+    return keywords
+
+# ... (other functions and code)
 
 # Function to search for keywords in the PDF text and find their locations
 def search_keywords(text, keywords):
@@ -46,53 +59,33 @@ def extract_sentences(text, keyword_results, sentence_window=100):
 # Initialize GenerativeModel
 model = genai.GenerativeModel('gemini-pro')
 
-# Function to process user input
-def process_input(user_input, pdf_text):
-    try:
-        keywords = extract_keywords(user_input)
-        print("Detected Keywords:", keywords)
+@app.route('/')
+def index():
+    return render_template('index.html')  # Render the HTML template
+from flask import Flask, render_template, request, jsonify
 
+# ... (other imports and code)
+
+@app.route('/ask_ai', methods=['POST'])
+def ask_ai():
+    try:
+        user_input = request.json['prompt']
+        pdf_path = r"C:\Users\Yousuf Traders\OneDrive\Desktop\gsoc\abd code\constitution of pakistan.pdf"
+        pdf_text = read_pdf(pdf_path)
+
+        keywords = extract_keywords(user_input)
         keyword_results = search_keywords(pdf_text, keywords)
 
-        # Extract sentences around keyword locations and print the extracted text
         sentences = extract_sentences(pdf_text, keyword_results)
-        for keyword, sentence_list in sentences.items():
-            print(f"\nExtracted Text for Keyword '{keyword}':")
-            for _, _, sentence in sentence_list:
-                print(sentence)
-
-        # Concatenate extracted sentences
         concatenated_sentences = ' '.join(sentence for keyword, sentence_list in sentences.items() for _, _, sentence in sentence_list)
 
-        # Generate AI response based on the user input and extracted information
         prompt = f"Read the below text and extract a summarized answer for this according to: {user_input} Try to answer and write a summarized answer according to the provided date (if any), point number (if any), or anything that specifically refers to that statement from the given text:\n\n{concatenated_sentences}"
+        
         response = model.generate_content(prompt)
+        
+        return jsonify({'status': 'success', 'response': response.text})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
 
-        print("\nAI Response:")
-        print(response.text)
-    except Exception:
-        print("May you have a lovely day!")
-
-# Function to extract relevant keywords using NLTK
-def extract_keywords(text):
-    stop_words = set(stopwords.words('english'))
-    word_tokens = word_tokenize(text)
-    keywords = [word.lower() for word in word_tokens if word.isalnum() and word.lower() not in stop_words]
-    return keywords
-
-# Path to the PDF file
-pdf_path = r"C:\Users\Yousuf Traders\OneDrive\Desktop\gsoc\abd code\constitution of pakistan.pdf"
-# Read text from PDF
-pdf_text = read_pdf(pdf_path)
-
-# Function to interactively ask questions or input text
-def interact_with_ai(pdf_text):
-    while True:
-        user_input = input("Enter your question or text (type 'exit' to quit): ")
-        if user_input.lower() == 'exit':
-            break
-        else:
-            process_input(user_input, pdf_text)
-
-# Interact with AI
-interact_with_ai(pdf_text)
+if __name__ == '__main__':
+    app.run(debug=True)
