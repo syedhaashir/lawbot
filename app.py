@@ -8,11 +8,11 @@ from nltk.tokenize import word_tokenize
 
 app = Flask(__name__)
 
-# Set your API key here
+
 GOOGLE_API_KEY = "AIzaSyBFJ1K8XvM6vlVxNa4iCFcLyQq7mGKfAl8"
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# Download NLTK resources
+
 nltk.download('stopwords')
 nltk.download('punkt')
 
@@ -73,7 +73,6 @@ def extract_article_numbers(text):
     article_numbers = re.findall(r'Article\s+(\d+)', text)
     return ['Article ' + num for num in article_numbers]
 
-# In the '/ask_ai' route handler
 @app.route('/ask_ai', methods=['POST'])
 def ask_ai():
     try:
@@ -90,7 +89,7 @@ def ask_ai():
 
         article_numbers = extract_article_numbers(pdf_text)
 
-        # Create a prompt with placeholders for each sentence
+        #Prompt with placeholders for each sentence
         prompt = prompt =f"{concatenated_sentences} /n Read the above given text in the pdf file and cosider it as an information through which you have to answer the below question. Generate the answer completely according to the given text and it should be in detailed form.The answer sould be bulleted where sentences are starting./{user_input}"
 
         for index, (_, sentence_list) in enumerate(sentences.items(), start=1):
