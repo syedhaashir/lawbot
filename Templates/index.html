@@ -100,11 +100,11 @@
             var loader = document.getElementById('loader');
             var responseDiv = document.getElementById('aiResponse');
 
-            // Display loader
+            // Displaying loader
             loader.style.display = 'block';
-            responseDiv.innerHTML = '';  // Clear previous responses
+            responseDiv.innerHTML = '';  
 
-            // Make a POST request to the /ask_ai route
+            // Making a POST request to the /ask_ai route
             fetch('/ask_ai', {
                 method: 'POST',
                 headers: {
@@ -114,20 +114,20 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Hide loader
+                
                 loader.style.display = 'none';
 
                 if (data.status === 'success') {
-                    // Display AI response with typing effect
+                    // Displaying AI response with typing effect
                     typeResponse(data.response, responseDiv);
                 } else {
-                    // Display error message
+                    // Displaying error message
                     responseDiv.innerHTML = '<strong>Error:</strong><br>' + data.message;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                // Hide loader in case of an error
+                
                 loader.style.display = 'none';
             });
         }
