@@ -13,7 +13,7 @@ JusticeAI is a Flask-based application that reads the Constitution of Pakistan a
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/JusticeAI.git
+   git clone https://github.com/your-username/lawbot.git
    ```
 
 2. Install dependencies:
